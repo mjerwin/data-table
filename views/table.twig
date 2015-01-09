@@ -1,0 +1,71 @@
+<script type="text/javascript">
+
+    var data_table;
+
+    $(function () {
+        data_table = $('.table').dataTable({
+            'searching': {{ table.getSearchingEnabled() ? 'true' : 'false' }},
+            'ordering': {{ table.getSortingEnabled() ? 'true' : 'false' }},
+            'columns': [
+                {% for orderable in table.getColumnSortingData() %}
+                { 'orderable': {{ orderable ? 'true' : 'false' }} },
+                {% endfor %}
+            ],
+            {% if table.getDefaultSortingData() is not empty %}
+            'order': [
+                {% for index, order in table.getDefaultSortingData() %}
+                [{{ index }}, '{{ order }}'],
+                {% endfor %}
+            ],
+            {% endif %}
+            {% if table.getPageLength() %}
+            'pageLength': {{ table.getPageLength() }},
+            {% endif %}
+            {% if table.getLengthMenuOptions() %}
+            "lengthMenu": [ {{ table.getLengthMenuOptions() | join(',') }} ],
+            {% endif %}
+            'language': {
+                {% for key, value in table.getLanguageOptions() %}
+                {% if value is iterable %}
+                '{{ key }}': {
+                    {% for sub_key, sub_value in value %}
+                    '{{ sub_key }}': '{{ sub_value }}',
+                    {% endfor %}
+                },
+                {% else %}
+                '{{ key }}': '{{ value }}',
+                {% endif %}
+                {% endfor %}
+            },
+            'bLengthChange': {{ table.isLengthMenuEnabled() ? 'true' : 'false' }}
+        });
+    });
+</script>
+
+<table class="{{ table.getClassesAsString() }}">
+    <thead>
+    <tr>
+        {% for column in table.getColumns() %}
+            <th>{{ column.getName() }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for row in table.getArrangedData() %}
+
+        {% set attr = '' %}
+
+        {% for key, value in row['attr'] %}
+            {% set attr = attr ~ ' ' ~ key ~ '=' ~ value ~ '' %}
+        {% endfor %}
+
+        <tr id="{{ row['tr_id'] }}"{{ attr }} >
+            {% for column in row['columns'] %}
+                <td {% if column['search_value'] %}data-search="{{ column['search_value'] }}"
+                    {% endif %}{% if column['order_value'] %}data-search="{{ column['order_value'] }}" {% endif %}>{{ column['value'] | raw }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

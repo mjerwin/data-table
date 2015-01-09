@@ -1,0 +1,19 @@
+{
+    "name": "mjerwin/data-table",
+    "description": "",
+    "authors": [
+        {
+            "name": "MJErwin",
+            "email": "matthew.j.erwin@me.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "MJErwin\\DataTable": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
