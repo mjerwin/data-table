@@ -12,8 +12,11 @@
     },
     "autoload": {
         "psr-0": {
-            "MJErwin\\DataTable": "src/"
-        }
+            "DataTable": "src/"
+        },
+        "classmap": [
+            "./Module.php"
+        ]
     },
     "minimum-stability": "stable"
 }

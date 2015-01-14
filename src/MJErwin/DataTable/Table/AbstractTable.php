@@ -4,7 +4,7 @@
 namespace MJErwin\DataTable\Table;
 
 use MJErwin\DataTable\Column\AbstractColumn;
-use View;
+use Zend\View\Model\ViewModel;
 
 
 /**
@@ -197,9 +197,12 @@ abstract class AbstractTable
 
     public function render()
     {
-        return View::make('data-table::table', [
+        $view_model = new ViewModel([
             'table' => $this,
         ]);
+        $view_model->setTemplate('data-table/table');
+
+        return $view_model;
     }
 
     public function setProcessingLanguageText($text)
@@ -216,7 +219,6 @@ abstract class AbstractTable
     {
         $this->language_options['lengthMenu'] = $text;
     }
-
 
     public function setInfoLanguageText($text)
     {
