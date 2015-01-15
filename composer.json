@@ -12,7 +12,7 @@
     },
     "autoload": {
         "psr-0": {
-            "DataTable": "src/"
+            "MJErwin\\DataTable": "src/"
         }
     },
     "minimum-stability": "stable"
