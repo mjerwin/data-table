@@ -1,14 +1,12 @@
 <?php
 
-
 namespace MJErwin\DataTable\Table;
 
-
-
 /**
-* @author Matthew Erwin <matthew.j.erwin@me.com>
-*/
-class ArrayTable extends AbstractTable {
+ * @author Matthew Erwin <matthew.j.erwin@me.com>
+ */
+class ArrayTable extends AbstractTable
+{
     protected $data = [];
 
     /**

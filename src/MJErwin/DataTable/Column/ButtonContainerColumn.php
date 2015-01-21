@@ -14,6 +14,7 @@ class ButtonContainerColumn extends AbstractColumn
 {
     protected $buttons = [];
     protected $sorting_enabled = false;
+    protected $classes = ['btn-group'];
 
     function __construct()
     {
@@ -34,10 +35,11 @@ class ButtonContainerColumn extends AbstractColumn
 
     public function render($value, $row_data)
     {
-        $result = '<div class="btn-group">';
+        $result = sprintf('<div class="%s">', implode(' ', $this->getClasses()));
 
-        foreach($this->getButtons() as $button){
-            if(!$button->isShowable($row_data))
+        foreach($this->getButtons() as $button)
+        {
+            if (!$button->isShowable($row_data))
             {
                 continue;
             }
@@ -50,4 +52,19 @@ class ButtonContainerColumn extends AbstractColumn
         return $result;
     }
 
+    /**
+     * @return array
+     */
+    public function getClasses()
+    {
+        return $this->classes;
+    }
+
+    /**
+     * @param array $classes
+     */
+    public function setClasses($classes)
+    {
+        $this->classes = $classes;
+    }
 } 

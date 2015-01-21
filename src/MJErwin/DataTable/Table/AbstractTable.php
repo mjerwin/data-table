@@ -4,7 +4,7 @@
 namespace MJErwin\DataTable\Table;
 
 use MJErwin\DataTable\Column\AbstractColumn;
-use Zend\View\Model\ViewModel;
+use MJErwin\DataTable\Exception\DataTableException;
 
 
 /**
@@ -12,15 +12,31 @@ use Zend\View\Model\ViewModel;
  */
 abstract class AbstractTable
 {
+    /** @var array */
     protected $columns = [];
-    protected $classes = [];
+    /** @var array */
+    protected $classes = ['table'];
+    /** @var string */
+    protected $id;
+    /** @var bool */
     protected $searching_enabled = true;
+    /** @var bool */
     protected $sorting_enabled = true;
+    /** @var array */
     protected $language_options = [];
-    protected $length_menu_options;
+    /** @var array */
+    protected $length_menu_options = [];
+    /** @var  int */
     protected $page_length;
+    /** @var array */
     protected $row_attributes = [];
+    /** @var bool */
     protected $length_menu_enabled = true;
+
+    function __construct($id)
+    {
+        $this->setId($id);
+    }
 
     /**
      * @param AbstractColumn $column
@@ -54,6 +70,22 @@ abstract class AbstractTable
     public function getClassesAsString()
     {
         return implode(' ', $this->classes);
+    }
+
+    /**
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param string $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     public function getSearchingEnabled()
@@ -195,14 +227,127 @@ abstract class AbstractTable
         $this->language_options[$key] = $value;
     }
 
+    public function validateOptions()
+    {
+        if (!$this->getId())
+        {
+            throw new DataTableException('Every table must have an ID');
+        }
+    }
+
     public function render()
     {
-        $view_model = new ViewModel([
-            'table' => $this,
-        ]);
-        $view_model->setTemplate('data-table/table');
+        $this->validateOptions();
 
-        return $view_model;
+        return $this->renderTable() . $this->renderScript();
+    }
+
+    protected function renderTable()
+    {
+        $table = sprintf('<table id="%s" class="%s">', $this->getId(), $this->getClassesAsString());
+        $table .= '<thead>';
+        $table .= '<tr>';
+
+        foreach($this->getColumns() as $column)
+        {
+            $table .= sprintf('<th>%s</th>', $column->getName());
+        }
+
+        $table .= '</tr>';
+        $table .= '</thead>';
+
+        $table .= '<tbody>';
+
+        foreach($this->getArrangedData() as $row)
+        {
+            $attr = '';
+
+            foreach($row['attr'] as $key => $value)
+            {
+                $attr .= sprintf('%s=%s', $key, $value);
+            }
+
+            $table .= sprintf('<tr id="%s" %s>', $row['tr_id'], $attr);
+
+            foreach($row['columns'] as $column)
+            {
+                $table .= '<td ';
+
+                if ($column['search_value'])
+                {
+                    $table .= sprintf('data-search="%s"', $column['search_value']);
+                }
+
+                $table .= '>';
+                $table .= $column['value'];
+
+                /** @todo Order value? */
+
+                $table .= '</td>';
+            }
+
+            $table .= '</tr>';
+        }
+
+        $table .= '</tbody>';
+
+        $table .= '</table>';
+
+        return $table;
+    }
+
+    protected function renderScript()
+    {
+        $script = '<script type="text/javascript">';
+
+        $script .= 'var data_table;';
+        $script .= '$(function () {';
+
+        $script .= sprintf('data_table = $("#%s").dataTable(%s);', $this->getId(), $this->getOptionJson());
+
+        $script .= '});';
+        $script .= '</script>';
+
+        return $script;
+    }
+
+    protected function getOptionJson()
+    {
+        $array = [];
+
+        $array['searching'] = $this->getSearchingEnabled() ? true : false;
+        $array['ordering'] = $this->getSortingEnabled() ? true : false;
+
+        foreach($this->getColumnSortingData() as $orderable)
+        {
+            $array['columns'][]['orderable'] = $orderable ? true : false;
+        }
+
+        foreach($this->getDefaultSortingData() as $index => $order)
+        {
+            $array['order'][] = [$index, $order];
+        }
+
+        if ($this->getPageLength())
+        {
+            $array['pageLength'] = $this->getPageLength();
+        }
+
+        if (!empty($this->getLengthMenuOptions()))
+        {
+            $array['lengthMenu'] = $this->getLengthMenuOptions();
+        }
+
+        if (!empty($this->getLanguageOptions()))
+        {
+            $array['language'] = $this->getLanguageOptions();
+        }
+
+        $array['bLengthChange'] = $this->isLengthMenuEnabled() ? true : false;
+
+        $json = json_encode($array);
+
+        return $json;
     }
 
     public function setProcessingLanguageText($text)
@@ -332,4 +477,4 @@ abstract class AbstractTable
     {
         $this->length_menu_enabled = $length_menu_enabled;
     }
-} 
+}

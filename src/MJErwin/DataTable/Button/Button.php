@@ -11,7 +11,7 @@ class Button
 
     protected $id;
     protected $text = '';
-    protected $classes = [];
+    protected $classes = ['btn'];
     protected $link;
     protected $attributes = [];
     protected $row_data = [];
@@ -112,7 +112,7 @@ class Button
     public function getLink()
     {
         $link = $this->replaceVariablesWithRowValues($this->link);
-        return url($link);
+        return $link;
     }
 
     /**
